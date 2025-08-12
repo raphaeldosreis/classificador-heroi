@@ -1,0 +1,208 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Classificador de Nível de Herói</title>
+  <style>
+    
+    :root{
+      --bg:#0f1724;
+      --card:#0b1220;
+      --accent:#7c3aed;
+      --muted:#94a3b8;
+      --glass: rgba(255,255,255,0.04);
+    }
+    *{box-sizing:border-box}
+    body{
+      margin:0;
+      font-family:Inter, system-ui, -apple-system, "Segoe UI", Roboto, "Helvetica Neue", Arial;
+      background:linear-gradient(180deg,#071022 0%, #07102a 60%);
+      color:#e6eef8;
+      min-height:100vh;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      padding:24px;
+    }
+    .card{
+      width:100%;
+      max-width:900px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border-radius:12px;
+      padding:28px;
+      box-shadow: 0 8px 30px rgba(2,6,23,0.6);
+      border:1px solid rgba(255,255,255,0.03);
+      display:grid;
+      grid-template-columns:1fr 320px;
+      gap:20px;
+    }
+    h1{margin:0 0 8px;font-size:20px}
+    p.lead{margin:0 0 18px;color:var(--muted)}
+    label{display:block;font-size:13px;margin-bottom:6px;color:var(--muted)}
+    input[type="text"], input[type="number"]{
+      width:100%;
+      padding:10px 12px;
+      border-radius:8px;
+      border:1px solid rgba(255,255,255,0.04);
+      background:var(--glass);
+      color:inherit;
+      outline:none;
+      font-size:14px;
+    }
+    .controls{display:flex;gap:10px;margin-top:12px}
+    button{
+      padding:10px 14px;
+      border-radius:10px;
+      border:0;
+      cursor:pointer;
+      font-weight:600;
+      background:linear-gradient(90deg,var(--accent), #4c1d95);
+      color:white;
+      box-shadow:0 6px 18px rgba(124,58,237,0.18);
+    }
+    button.secondary{
+      background:transparent;
+      border:1px solid rgba(255,255,255,0.04);
+      color:var(--muted);
+      font-weight:600;
+    }
+    .result{
+      padding:16px;
+      border-radius:10px;
+      background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));
+      border:1px solid rgba(255,255,255,0.02);
+      height:100%;
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+    }
+    .level-badge{
+      font-weight:700;
+      padding:4px 10px;
+      border-radius:999px;
+      background:rgba(255,255,255,0.03);
+      font-size:12px;
+    }
+    ul#listaHerois{
+      list-style:none;
+      padding:0;
+      margin:0;
+      display:flex;
+      flex-direction:column;
+      gap:6px;
+      font-size:14px;
+    }
+    footer{grid-column:1/-1;text-align:center;color:var(--muted);font-size:13px;margin-top:12px}
+    @media (max-width:820px){
+      .card{grid-template-columns:1fr; padding:20px}
+    }
+  </style>
+</head>
+<body>
+  <main class="card" role="main">
+    <section>
+      <h1>Classificador de Nível de Herói</h1>
+      <p class="lead">Digite o nome do herói e a quantidade de XP — o sistema retorna o nível correspondente.</p>
+
+      <div>
+        <label for="nome">Nome do Herói</label>
+        <input id="nome" type="text" placeholder="Ex: Aragorn" />
+      </div>
+
+      <div style="margin-top:12px">
+        <label for="xp">XP (experiência)</label>
+        <input id="xp" type="number" placeholder="Ex: 8500" min="0" />
+      </div>
+
+      <div class="controls">
+        <button id="calcular">Classificar</button>
+        <button id="limpar" class="secondary" type="button">Limpar Lista</button>
+      </div>
+
+
+    </section>
+
+    <aside class="result" aria-live="polite">
+      <div class="meta">Heróis cadastrados</div>
+      <ul id="listaHerois">
+        <li>Nenhum herói ainda...</li>
+      </ul>
+    </aside>
+
+    <footer>
+      
+    </footer>
+  </main>
+
+  <script>
+    const nomeEl = document.getElementById('nome');
+    const xpEl = document.getElementById('xp');
+    const btn = document.getElementById('calcular');
+    const limpar = document.getElementById('limpar');
+    const listaHerois = document.getElementById('listaHerois');
+
+    // função que classifica com base no XP
+
+    function classificarXP(xp){
+      xp = Number(xp) || 0;
+      if (xp <= 1000) return 'Ferro';
+      if (xp <= 2000) return 'Bronze';
+      if (xp <= 5000) return 'Prata';
+      if (xp <= 7000) return 'Ouro';
+      if (xp <= 8000) return 'Platina';
+      if (xp <= 9000) return 'Ascendente';
+      if (xp <= 10000) return 'Imortal';
+      return 'Radiante';
+    }
+
+    // array para armazenar heróis
+
+    const herois = [];
+
+    btn.addEventListener('click', ()=>{
+      const nome = nomeEl.value.trim();
+      const xp = Number(xpEl.value.trim());
+
+      if (!nome){
+        alert('Digite o nome do herói.');
+        return;
+      }
+      if (!Number.isFinite(xp) || xp < 0){
+        alert('Digite um XP válido (número inteiro ≥ 0).');
+        return;
+      }
+
+      const nivel = classificarXP(xp);
+      herois.push({nome, xp, nivel});
+      atualizarLista();
+
+      // limpa campos para "repetir"
+      
+      nomeEl.value = '';
+      xpEl.value = '';
+      nomeEl.focus();
+    });
+
+    limpar.addEventListener('click', ()=>{
+      herois.length = 0;
+      atualizarLista();
+    });
+
+    function atualizarLista(){
+      listaHerois.innerHTML = '';
+      if (herois.length === 0){
+        listaHerois.innerHTML = '<li>Nenhum herói ainda...</li>';
+        return;
+      }
+      herois.forEach(h=>{
+        const li = document.createElement('li');
+        li.innerHTML = `<strong>${h.nome}</strong> — XP: ${h.xp} <span class="level-badge">${h.nivel}</span>`;
+        listaHerois.appendChild(li);
+      });
+    }
+
+    atualizarLista();
+  </script>
+</body>
+</html>
